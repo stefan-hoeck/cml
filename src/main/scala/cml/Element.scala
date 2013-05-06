@@ -1,5 +1,6 @@
 package cml
 
+import cml.xml._, Xml._
 import scalaz._, Scalaz._
 
 sealed abstract class Element(final val atomicNr: Int) {
@@ -160,6 +161,8 @@ object Element {
   }
 
   implicit val ElementEqual: Equal[Element] = Equal.equalA
+  implicit val WriteXmlImpl = singleAttr[Element](_.symbol, ElementTypeQn)
+  implicit val ReadXmlImpl = fromAttr(fromSymbolV, ElementTypeQn)
 }
 
 // vim: set ts=2 sw=2 et:

@@ -12,7 +12,13 @@ object BuildSettings {
     scalaVersion := buildScalaVersion,
     exportJars := true,
     scalacOptions ++= Seq ("-deprecation", "-feature", "-language:postfixOps",
-      "-language:higherKinds")
+      "-language:higherKinds"),
+    initialCommands in console := """
+      import scalaz._, Scalaz._
+      import cml._, cml.xml._, cml.xml.Xml._
+      import scalaz.xml.Xml._
+      val atom = Atom("a1", Element.Br, Some(-1))
+    """
   )
 
 } 

@@ -1,6 +1,6 @@
 
 import scalaz._, Scalaz._
-import scalaz.xml._
+import cml.xml._
 
 package object cml {
   type Errors = NonEmptyList[String]
@@ -13,7 +13,12 @@ package object cml {
 
   final val ConventionURI = "http://www.xml-cml.org/convention/"
 
-  final val CmlQN = QName qname ("cml".toList, CmlURI.toList.some)
+  def cmlQn(name: String) = qname(name, Some("cml"), Some(CmlURI))
+
+  final val IdQn = cmlQn("id")
+  final val ElementTypeQn = cmlQn("elementType")
+  final val FormalChargeQn = cmlQn("formalCharge")
+  final val AtomQn = cmlQn("atom")
 }
 
 // vim: set ts=2 sw=2 et:
