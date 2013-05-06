@@ -161,7 +161,7 @@ object Element {
   }
 
   implicit val ElementEqual: Equal[Element] = Equal.equalA
-  implicit val WriteXmlImpl = singleAttr[Element](_.symbol, ElementTypeQn)
+  implicit val WriteXmlImpl = writeAttr[Element](_.symbol, ElementTypeQn)
   implicit val ReadXmlImpl = fromAttr(fromSymbolV, ElementTypeQn)
 }
 

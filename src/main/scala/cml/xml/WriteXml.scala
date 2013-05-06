@@ -11,15 +11,18 @@ object WriteXml extends WriteXmlFunctions {
 }
 
 trait WriteXmlFunctions {
-  def elemData[A](f: A ⇒ ElemData): WriteXml[A] = new WriteXml[A] {
+  def writeData[A](f: A ⇒ ElemData): WriteXml[A] = new WriteXml[A] {
     def elemData(a: A): ElemData = f(a)
   }
 
-  def singleAttr[A](f: A ⇒ String, qn: QName): WriteXml[A] =
-    elemData(a ⇒ (DList(attr(qn, f(a))), DList()))
+  def writeAttr[A](f: A ⇒ String, qn: QName): WriteXml[A] =
+    writeData(a ⇒ (DList(attr(qn, f(a))), DList()))
 
-  def singleElem[A](f: A ⇒ String, qn: QName): WriteXml[A] =
-    elemData(a ⇒ (DList(), DList(text(qn, f(a)))))
+  def writeText[A](f: A ⇒ String, qn: QName): WriteXml[A] =
+    writeElem(a ⇒ text(qn, f(a)))
+
+  def writeElem[A](f: A ⇒ Elem): WriteXml[A] =
+    writeData(a ⇒ (DList(), DList(f(a))))
 }
 
 trait WriteXmlInstances {

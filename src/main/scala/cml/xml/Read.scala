@@ -41,6 +41,8 @@ trait ReadInstances {
       ((_: Exception) ⇒ msg(s).wrapNel) <-: v(s.trim)
   }
 
+  implicit val stringInst = Read.read[String](_.success)
+
   implicit val booleanInst =
     inst(_.parseBoolean, s ⇒ s"Not a boolean: $s")
 

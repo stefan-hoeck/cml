@@ -4,7 +4,7 @@ import cml.xml._, Xml._
 import scalaz._, Scalaz._
 
 final case class Atom(
-    id: CMLId,
+    id: String,
     element: Element,
     formalCharge: Option[Int])
 
@@ -14,11 +14,11 @@ object Atom {
   implicit val AtomEqual = Equal.equalA[Atom]
 
   implicit val ReadXmlImpl = fromElem { e ⇒ 
-    ap[ValRes] apply (e.read, e.read, e readAttrO FormalChargeQn)
+    ap[ValRes] apply (e readAttr IdQn, e.read, e readAttrO FormalChargeQn)
   }
 
-  implicit val WriteXmlImpl = elemData { a: Atom ⇒ 
-    a.id.elemData ⊹ 
+  implicit val WriteXmlImpl = writeData { a: Atom ⇒ 
+    a.id.writeAttr(IdQn) ⊹ 
     a.element.elemData ⊹ 
     a.formalCharge.foldMap { _ writeAttr FormalChargeQn }
   }
