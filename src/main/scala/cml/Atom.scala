@@ -12,10 +12,10 @@ final case class Atom(
 object Atom {
   implicit val AtomEqual = Equal.equalA[Atom]
 
-  implicit val ReadXmlImpl: ReadXml[Atom] = 
+  implicit val XmlReaderImpl: XmlReader[Atom] = 
     ^^(rId, rElement, rFormalCharge)(Atom.apply)
 
-  implicit val WriteXmlImpl: WriteXml[Atom] = a ⇒ 
+  implicit val XmlWriterImpl: XmlWriter[Atom] = a ⇒ 
     wId(a.id) ⊹ wElement(a.element) ⊹ wFormalCharge(a.formalCharge)
 }
 

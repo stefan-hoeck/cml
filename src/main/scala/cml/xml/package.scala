@@ -19,9 +19,11 @@ package object xml {
 
   type ElemData = (DList[Attr], DList[Elem])
 
-  type ReadXml[+A] = Elem ⇒ ValRes[A]
+  type Reader[-A,+B] = A ⇒ (DList[String],ValRes[B])
 
-  type WriteXml[-A] = A ⇒ ElemData
+  type XmlReader[+A] = Reader[Elem,A]
+
+  type XmlWriter[-A] = A ⇒ ElemData
 
   def qname(name: String, pre: Option[String], uri: Option[String]): QName =
     QNameZ qname (name.toList, uri map toList, pre map toList)

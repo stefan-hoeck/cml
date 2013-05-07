@@ -20,17 +20,17 @@ trait ReadFunctions {
   def read[A](f: String ⇒ ValRes[A]): Read[A] =
     new Read[A] { def read(s: String) = f(s) }
 
-  def readAttr[A:Read](qn: QName): ReadXml[A] =
-    reval(attrValue(qn))(Read[A].read)
+  def readAttr[A:Read](qn: QName): XmlReader[A] = ???
+    //reval(attrValue(qn))(Read[A].read)
 
-  def readAttrO[A:Read](qn: QName): ReadXml[Option[A]] =
-    revalO(attrValueO(qn))(Read[A].read)
+  def readAttrO[A:Read](qn: QName): XmlReader[Option[A]] = ???
+    //revalO(attrValueO(qn))(Read[A].read)
 
-  def readElem[A:Read](qn: QName): ReadXml[A] =
-    reval(elemText(qn))(Read[A].read)
+  def readElem[A:Read](qn: QName): XmlReader[A] = ???
+    //reval(elemText(qn))(Read[A].read)
 
-  def readElemO[A:Read](qn: QName): ReadXml[Option[A]] =
-    revalO(elemTextO(qn))(Read[A].read)
+  def readElemO[A:Read](qn: QName): XmlReader[Option[A]] = ???
+    //revalO(elemTextO(qn))(Read[A].read)
 }
 
 trait ReadInstances {

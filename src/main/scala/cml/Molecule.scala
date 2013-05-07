@@ -12,10 +12,10 @@ case class Molecule(
 object Molecule {
   implicit val MoleculeEqual = Equal.equalA[Molecule]
 
-  implicit val ReadXmlImpl: ReadXml[Molecule] =
+  implicit val XmlReaderImpl: XmlReader[Molecule] =
     ^^(rId, rCount, rAtoms)(Molecule.apply)
 
-  implicit val WriteXmlImpl: WriteXml[Molecule] = m ⇒ 
+  implicit val XmlWriterImpl: XmlWriter[Molecule] = m ⇒ 
     wId(m.id) ⊹ wCount(m.count) ⊹ wAtoms(m.atoms)
 }
 

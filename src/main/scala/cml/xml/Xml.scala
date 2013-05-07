@@ -10,80 +10,80 @@ object Xml
   with XmlInstances {
 
   implicit class AnyOps[A](val a: A) extends AnyVal {
-    def xml(qn: QName)(implicit F: WriteXml[A]): Elem = elem(qn, F(a))
+    def xml(qn: QName)(implicit F: XmlWriter[A]): Elem = elem(qn, F(a))
   }
 
   implicit class ElemOps(val v: Elem) extends AnyVal {
-    def read[A](implicit F: ReadXml[A]): ValRes[A] = F(v)
+    def read[A](implicit F: XmlReader[A]): ValRes[A] = F(v)._2
   }
 }
 
 trait XmlInstances {
-  implicit val ReadXmlApplicative: Applicative[ReadXml] =
-    Applicative[({type λ[α] = Elem ⇒ α})#λ].compose[ValRes]
+  implicit val XmlReaderApplicative: Applicative[XmlReader] = ???
+    //Applicative[({type λ[α] = Elem ⇒ α})#λ].compose[ValRes]
 }
 
 trait XmlFunctions {
-  def attrValueO(qname: QName): ReadXml[Option[String]] =
-    byQn(qname)(_){ _ findAttrBy _ } map fromList success
+  def attrValueO(qn: QName): XmlReader[Option[String]] = ???
+    //byQn(qn)(_){ _ findAttrBy _ } map fromList success
 
-  def attrValue(qname: QName): ReadXml[String] =
-    reval(attrValueO(qname)){ _ toSuccess s"Attribute missing: $qname".wrapNel }
+  def attrValue(qn: QName): XmlReader[String] = ???
+    //reval(attrValueO(qn)){ _ toSuccess s"Attribute missing: $qn".wrapNel }
 
-  def findElemO(qname: QName): ReadXml[Option[Elem]] =
-    byQn(qname)(_){ _ filterElementQname _ } success
+  def findElemO(qn: QName): XmlReader[Option[Elem]] = ???
+    //byQn(qn)(_){ _ filterElementQname _ } success
 
-  def findElem(qname: QName): ReadXml[Elem] =
-    reval(findElemO(qname)){  _ toSuccess s"Element missing: $qname".wrapNel }
+  def findElem(qn: QName): XmlReader[Elem] = ???
+    //reval(findElemO(qn)){  _ toSuccess s"Element missing: $qn".wrapNel }
 
-  def findElems(qname: QName): ReadXml[List[Elem]] =
-    byQns(qname)(_){ _ filterChildrenQname _ } success
+  def findElems(qn: QName): XmlReader[List[Elem]] = ???
+    //byQns(qn)(_){ _ filterChildrenQname _ } success
 
-  def elemTextO(qname: QName): ReadXml[Option[String]] =
-    readMapO(findElemO(qname)){ e ⇒ fromList(e.strContent) }
+  def elemTextO(qn: QName): XmlReader[Option[String]] = ???
+    //readMapO(findElemO(qn)){ e ⇒ fromList(e.strContent) }
 
-  def elemText(qname: QName): ReadXml[String] =
-    readMap(findElem(qname)){ e ⇒ fromList(e.strContent) }
+  def elemText(qn: QName): XmlReader[String] = ???
+    //readMap(findElem(qn)){ e ⇒ fromList(e.strContent) }
 
-  def readElem[A](qname: QName)(implicit F: ReadXml[A]): ReadXml[A] =
-    reval(findElem(qname))(F)
+  def readElem[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[A] = ???
+    //reval(findElem(qn))(F)
 
-  def readElemO[A](qname: QName)(implicit F: ReadXml[A]): ReadXml[Option[A]] =
-    revalO(findElemO(qname))(F)
+  def readElemO[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[Option[A]] = ???
+    //revalO(findElemO(qn))(F)
 
-  def readElems[A](qname: QName)(implicit F: ReadXml[A]): ReadXml[List[A]] =
-    reval(findElems(qname)){ _ traverse F }
+  def readElems[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[List[A]] = ???
+    //reval(findElems(qn)){ _ traverse F }
 
-  def reval[A,B](ra: ReadXml[A])(v: A ⇒ ValRes[B]): ReadXml[B] =
-    ra(_) flatMap v
+  def reval[A,B](ra: XmlReader[A])(v: A ⇒ ValRes[B]): XmlReader[B] = ???
+    //ra(_) flatMap v
 
-  def revalO[A,B](ra: ReadXml[Option[A]])(v: A ⇒ ValRes[B])
-    : ReadXml[Option[B]] = ra(_) flatMap { _ traverse v }
+  def revalO[A,B](ra: XmlReader[Option[A]])(v: A ⇒ ValRes[B])
+    : XmlReader[Option[B]] = ??? //ra(_) flatMap { _ traverse v }
 
-  def readMap[A,B](ra: ReadXml[A])(f: A ⇒ B): ReadXml[B] = ra(_) map f
+  def readMap[A,B](ra: XmlReader[A])(f: A ⇒ B): XmlReader[B] = ??? //ra(_) map f
 
-  def readMapO[A,B](ra: ReadXml[Option[A]])(f: A ⇒ B): ReadXml[Option[B]] =
-    ra(_) map { _ map f }
+  def readMapO[A,B](ra: XmlReader[Option[A]])(f: A ⇒ B): XmlReader[Option[B]] = ???
+    //ra(_) map { _ map f }
 
-  def writeAttr[A](qn: QName): WriteXml[A] =
+  def writeAttr[A](qn: QName): XmlWriter[A] =
     a ⇒ (DList(attr(qn, a.toString)), DList())
 
-  def writeAttrS[A:Show](qn: QName): WriteXml[A] =
+  def writeAttrS[A:Show](qn: QName): XmlWriter[A] =
     a ⇒ (DList(attr(qn, a.shows)), DList())
 
-  def writeAttrO[A](qn: QName): WriteXml[Option[A]] =
+  def writeAttrO[A](qn: QName): XmlWriter[Option[A]] =
     _ foldMap writeAttr[A](qn)
 
-  def writeElem[A](qn: QName)(implicit F: WriteXml[A]): WriteXml[A] =
+  def writeElem[A](qn: QName)(implicit F: XmlWriter[A]): XmlWriter[A] =
     a ⇒ (DList(),DList(elem(qn, F(a))))
 
-  def writeElems[A](qn: QName)(implicit F: WriteXml[A]): WriteXml[List[A]] =
+  def writeElems[A](qn: QName)(implicit F: XmlWriter[A]): XmlWriter[List[A]] =
     _ foldMap writeElem[A](qn)
 
-  def writeText[A](qn: QName): WriteXml[A] = 
+  def writeText[A](qn: QName): XmlWriter[A] = 
     a ⇒ (DList(), DList(text(qn, a.toString)))
 
-  def writeXml[A](a: A, qn: QName)(implicit F: WriteXml[A]): Elem =
+  def writeXml[A](a: A, qn: QName)(implicit F: XmlWriter[A]): Elem =
     elem(qn, F(a))
     
 

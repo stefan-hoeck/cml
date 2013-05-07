@@ -13,38 +13,38 @@ trait Attributes {
   import Attributes._
 
   // *** Atom Array ***
-  def rAtoms: ReadXml[List[Atom]] = {
-    def rArray = findElemO(AtomArrayQn)
-    def rAs = revalO(rArray)(readElems[Atom](AtomQn))
+  def rAtoms: XmlReader[List[Atom]] = ??? //{
+//    def rArray = findElemO(AtomArrayQn)
+//    def rAs = revalO(rArray)(readElems[Atom](AtomQn))
+//
+//    readMap(rAs)(_.toList.flatten)
+//  }
 
-    readMap(rAs)(_.toList.flatten)
-  }
-
-  def wAtoms: WriteXml[List[Atom]] = as ⇒ 
+  def wAtoms: XmlWriter[List[Atom]] = as ⇒ 
     if (as.isEmpty) ∅[ElemData]
     else writeElem(AtomArrayQn)(writeElems[Atom](AtomQn))(as)
 
   // *** Count ***
-  def rCount: ReadXml[Option[Double]] =
+  def rCount: XmlReader[Option[Double]] =
     revalO(readAttrO[Double](CountQn))(vCount)
 
-  def wCount: WriteXml[Option[Double]] = writeAttrO(CountQn)
+  def wCount: XmlWriter[Option[Double]] = writeAttrO(CountQn)
 
   def vCount(d: Double): ValRes[Double] = 
     if (d >= 0D) d.success
     else s"Count must be a non-negative number: $d".failureNel
 
   // *** Element Type ***
-  def rElement: ReadXml[Element] = readAttr(ElementTypeQn)
-  def wElement: WriteXml[Element] = writeAttr(ElementTypeQn)
+  def rElement: XmlReader[Element] = readAttr(ElementTypeQn)
+  def wElement: XmlWriter[Element] = writeAttr(ElementTypeQn)
 
   // *** Formal Charge ***
-  def rFormalCharge: ReadXml[Option[Int]] = readAttrO(FormalChargeQn)
-  def wFormalCharge: WriteXml[Option[Int]] = writeAttrO(FormalChargeQn)
+  def rFormalCharge: XmlReader[Option[Int]] = readAttrO(FormalChargeQn)
+  def wFormalCharge: XmlWriter[Option[Int]] = writeAttrO(FormalChargeQn)
 
   // *** Id ***
-  def rId: ReadXml[String] = reval(readAttr[String](IdQn))(vId)
-  def wId: WriteXml[String] = writeAttr(IdQn)
+  def rId: XmlReader[String] = reval(readAttr[String](IdQn))(vId)
+  def wId: XmlWriter[String] = writeAttr(IdQn)
 
   def vId(s: String): ValRes[String] = 
     if (s matches idR) s.success else s"Not a valid CML Id: $s".failureNel
