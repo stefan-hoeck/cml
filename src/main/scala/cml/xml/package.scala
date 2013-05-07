@@ -17,6 +17,10 @@ package object xml {
 
   type ElemData = (DList[Attr], DList[Elem])
 
+  type ReadXml[+A] = Elem ⇒ ValRes[A]
+
+  type WriteXml[-A] = A ⇒ ElemData
+
   def qname(name: String, pre: Option[String], uri: Option[String]): QName =
     QNameZ qname (name.toList, uri map toList, pre map toList)
 
@@ -30,29 +34,8 @@ package object xml {
   def elem(qname: QName, data: ElemData): Elem =
     ElemZ element (qname, data._1.toList, data._2 map Content.elem toList)
 
-  def attrValue(qname: QName, elem: Elem): Option[String] =
-    byQn(qname)(elem){ _ findAttrBy _ } map fromList
-
-  def attrValueGet(qname: QName, elem: Elem): ValRes[String] =
-    attrValue(qname, elem) toSuccess s"Attribute missing: $qname".wrapNel
-
-  def elemText(qname: QName, elem: Elem): Option[String] =
-    byQn(qname)(elem){ _ filterElementQname _ } map { e ⇒ fromList(e.strContent) }
-
-  def elemTextGet(qname: QName, elem: Elem): ValRes[String] =
-    elemText(qname, elem) toSuccess s"Element missing: $qname".wrapNel
-
-  private def byQn[A,B](qn: QName)(a: A)(f: (A, (QName ⇒ Boolean)) ⇒ Option[B])
-    : Option[B] = {
-      def name(qn1: QName) = qn.name == qn1.name
-      def prefName(qn1: QName) = (qn.name == qn1.name) &&
-                                 (qn.prefix == qn1.prefix)
-
-      f(a, prefName) orElse f(a, name)
-    }
-
-  private def toList(s: String) = s.toList
-  private def fromList(cs: List[Char]) =  cs mkString ""
+  private[xml] def toList(s: String) = s.toList
+  private[xml] def fromList(cs: List[Char]) =  cs mkString ""
 }
 
 // vim: set ts=2 sw=2 et:

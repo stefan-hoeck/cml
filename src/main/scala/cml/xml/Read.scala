@@ -8,18 +8,6 @@ import scalaz._, Scalaz._
   */
 trait Read[+A] {
   def read(s: String): ValRes[A]
-
-  def readAttr(qn: QName, e: Elem): ValRes[A] = 
-    attrValueGet(qn, e) flatMap read
-
-  def readAttrO(qn: QName, e: Elem): ValRes[Option[A]] = 
-    attrValue(qn, e) traverse read
-
-  def readElem(qn: QName, e: Elem): ValRes[A] = 
-    elemTextGet(qn, e) flatMap read
-
-  def readElemO(qn: QName, e: Elem): ValRes[Option[A]] = 
-    elemText(qn, e) traverse read
 }
 
 object Read extends ReadFunctions with ReadInstances {
@@ -27,9 +15,22 @@ object Read extends ReadFunctions with ReadInstances {
 }
 
 trait ReadFunctions {
-  def read[A](f: String ⇒ ValRes[A]): Read[A] = new Read[A] {
-    def read(s: String) = f(s)
-  }
+  import Xml._
+
+  def read[A](f: String ⇒ ValRes[A]): Read[A] =
+    new Read[A] { def read(s: String) = f(s) }
+
+  def readAttr[A:Read](qn: QName): ReadXml[A] =
+    reval(attrValue(qn))(Read[A].read)
+
+  def readAttrO[A:Read](qn: QName): ReadXml[Option[A]] =
+    revalO(attrValueO(qn))(Read[A].read)
+
+  def readElem[A:Read](qn: QName): ReadXml[A] =
+    reval(elemText(qn))(Read[A].read)
+
+  def readElemO[A:Read](qn: QName): ReadXml[Option[A]] =
+    revalO(elemTextO(qn))(Read[A].read)
 }
 
 trait ReadInstances {

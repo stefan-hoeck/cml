@@ -1,5 +1,6 @@
 package cml
 
+import Attributes._
 import cml.xml._, Xml._
 import scalaz._, Scalaz._
 
@@ -9,13 +10,11 @@ case class Molecule(
     atoms: List[Atom])
 
 object Molecule {
-  private def ap[F[_]:Apply] = Apply[F] lift3 Molecule.apply
+  implicit val ReadXmlImpl: ReadXml[Molecule] =
+    ^^(rId, rCount, rAtoms)(Molecule.apply)
 
-  implicit val WriteXmlImpl = writeData { m: Molecule ⇒ 
-    m.id.writeAttr(IdQn) ⊹ 
-    m.count.foldMap { _ writeAttr CountQn } ⊹ 
-    m.atoms.foldMap { _.elemData }
-  }
+  implicit val WriteXmlImpl: WriteXml[Molecule] = m ⇒ 
+    wId(m.id) ⊹ wCount(m.count) ⊹ wAtoms(m.atoms)
 }
 
 

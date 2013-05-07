@@ -16,10 +16,6 @@ package object cml {
   def cmlQn(name: String) = qname(name, Some("cml"), Some(CmlURI))
 
   final val AtomQn = cmlQn("atom")
-  final val CountQn = cmlQn("count")
-  final val ElementTypeQn = cmlQn("elementType")
-  final val FormalChargeQn = cmlQn("formalCharge")
-  final val IdQn = cmlQn("id")
 }
 
 // vim: set ts=2 sw=2 et:

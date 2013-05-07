@@ -161,8 +161,8 @@ object Element {
   }
 
   implicit val ElementEqual: Equal[Element] = Equal.equalA
-  implicit val WriteXmlImpl = writeAttr[Element](_.symbol, ElementTypeQn)
-  implicit val ReadXmlImpl = fromAttr(fromSymbolV, ElementTypeQn)
+  implicit val ElementRead = Read read fromSymbolV
+  implicit val ElementShow = Show shows { e: Element ⇒ e.symbol }
 }
 
 // vim: set ts=2 sw=2 et:
