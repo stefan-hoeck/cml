@@ -24,35 +24,35 @@ trait XmlInstances {
 }
 
 trait XmlFunctions {
-  def attrValueO(qname: QName): ReadXml[Option[String]] =
-    byQn(qname)(_){ _ findAttrBy _ } map fromList success
+  def attrValueO(qn: QName): ReadXml[Option[String]] =
+    byQn(qn)(_){ _ findAttrBy _ } map fromList success
 
-  def attrValue(qname: QName): ReadXml[String] =
-    reval(attrValueO(qname)){ _ toSuccess s"Attribute missing: $qname".wrapNel }
+  def attrValue(qn: QName): ReadXml[String] =
+    reval(attrValueO(qn)){ _ toSuccess s"Attribute missing: $qn".wrapNel }
 
-  def findElemO(qname: QName): ReadXml[Option[Elem]] =
-    byQn(qname)(_){ _ filterElementQname _ } success
+  def findElemO(qn: QName): ReadXml[Option[Elem]] =
+    byQn(qn)(_){ _ filterElementQname _ } success
 
-  def findElem(qname: QName): ReadXml[Elem] =
-    reval(findElemO(qname)){  _ toSuccess s"Element missing: $qname".wrapNel }
+  def findElem(qn: QName): ReadXml[Elem] =
+    reval(findElemO(qn)){  _ toSuccess s"Element missing: $qn".wrapNel }
 
-  def findElems(qname: QName): ReadXml[List[Elem]] =
-    byQns(qname)(_){ _ filterChildrenQname _ } success
+  def findElems(qn: QName): ReadXml[List[Elem]] =
+    byQns(qn)(_){ _ filterChildrenQname _ } success
 
-  def elemTextO(qname: QName): ReadXml[Option[String]] =
-    readMapO(findElemO(qname)){ e ⇒ fromList(e.strContent) }
+  def elemTextO(qn: QName): ReadXml[Option[String]] =
+    readMapO(findElemO(qn)){ e ⇒ fromList(e.strContent) }
 
-  def elemText(qname: QName): ReadXml[String] =
-    readMap(findElem(qname)){ e ⇒ fromList(e.strContent) }
+  def elemText(qn: QName): ReadXml[String] =
+    readMap(findElem(qn)){ e ⇒ fromList(e.strContent) }
 
-  def readElem[A](qname: QName)(implicit F: ReadXml[A]): ReadXml[A] =
-    reval(findElem(qname))(F)
+  def readElem[A](qn: QName)(implicit F: ReadXml[A]): ReadXml[A] =
+    reval(findElem(qn))(F)
 
-  def readElemO[A](qname: QName)(implicit F: ReadXml[A]): ReadXml[Option[A]] =
-    revalO(findElemO(qname))(F)
+  def readElemO[A](qn: QName)(implicit F: ReadXml[A]): ReadXml[Option[A]] =
+    revalO(findElemO(qn))(F)
 
-  def readElems[A](qname: QName)(implicit F: ReadXml[A]): ReadXml[List[A]] =
-    reval(findElems(qname)){ _ traverse F }
+  def readElems[A](qn: QName)(implicit F: ReadXml[A]): ReadXml[List[A]] =
+    reval(findElems(qn)){ _ traverse F }
 
   def reval[A,B](ra: ReadXml[A])(v: A ⇒ ValRes[B]): ReadXml[B] =
     ra(_) flatMap v
