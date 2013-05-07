@@ -13,31 +13,38 @@ trait Attributes {
   import Attributes._
 
   // *** Atom Array ***
-  val rAtoms: ReadXml[List[Atom]] = {
+  def rAtoms: ReadXml[List[Atom]] = {
     def rArray = findElemO(AtomArrayQn)
     def rAs = revalO(rArray)(readElems[Atom](AtomQn))
 
     readMap(rAs)(_.toList.flatten)
   }
 
-  val wAtoms: WriteXml[List[Atom]] =
-    writeElems(AtomArrayQn)(writeElem(AtomQn))
+  def wAtoms: WriteXml[List[Atom]] = as ⇒ 
+    if (as.isEmpty) ∅[ElemData]
+    else writeElem(AtomArrayQn)(writeElems[Atom](AtomQn))(as)
 
   // *** Count ***
-  val rCount: ReadXml[Option[Double]] = readAttrO(CountQn)
-  val wCount: WriteXml[Option[Double]] = writeAttrO(ElementTypeQn)
+  def rCount: ReadXml[Option[Double]] =
+    revalO(readAttrO[Double](CountQn))(vCount)
+
+  def wCount: WriteXml[Option[Double]] = writeAttrO(CountQn)
+
+  def vCount(d: Double): ValRes[Double] = 
+    if (d >= 0D) d.success
+    else s"Count must be a non-negative number: $d".failureNel
 
   // *** Element Type ***
-  val rElement: ReadXml[Element] = readAttr(ElementTypeQn)
-  val wElement: WriteXml[Element] = writeAttr(ElementTypeQn)
+  def rElement: ReadXml[Element] = readAttr(ElementTypeQn)
+  def wElement: WriteXml[Element] = writeAttr(ElementTypeQn)
 
   // *** Formal Charge ***
-  val rFormalCharge: ReadXml[Option[Int]] = readAttrO(FormalChargeQn)
-  val wFormalCharge: WriteXml[Option[Int]] = writeAttrO(FormalChargeQn)
+  def rFormalCharge: ReadXml[Option[Int]] = readAttrO(FormalChargeQn)
+  def wFormalCharge: WriteXml[Option[Int]] = writeAttrO(FormalChargeQn)
 
   // *** Id ***
-  val rId: ReadXml[String] = reval(readAttr[String](IdQn))(vId)
-  val wId: WriteXml[String] = writeAttr(IdQn)
+  def rId: ReadXml[String] = reval(readAttr[String](IdQn))(vId)
+  def wId: WriteXml[String] = writeAttr(IdQn)
 
   def vId(s: String): ValRes[String] = 
     if (s matches idR) s.success else s"Not a valid CML Id: $s".failureNel
@@ -52,6 +59,7 @@ object Attributes extends Attributes {
   final val ElementTypeQn = cmlQn("elementType")
   final val FormalChargeQn = cmlQn("formalCharge")
   final val IdQn = cmlQn("id")
+  final val MoleculeQn = cmlQn("molecule")
 }
 
 // vim: set ts=2 sw=2 et:
