@@ -3,6 +3,8 @@ package cml
 import scalaz._, Scalaz._
 import scalaz.xml.{CData, CDataKind, Element ⇒ ElemZ,
                    Attr ⇒ AttrZ, QName ⇒ QNameZ, Content}
+import scalaz.xml.Xml._
+
 /** Defines type aliases and basic functions for interacting with an
   * XML backend.
   *
@@ -33,6 +35,11 @@ package object xml {
 
   def elem(qname: QName, data: ElemData): Elem =
     ElemZ element (qname, data._1.toList, data._2 map Content.elem toList)
+
+  def prettyPrint(elem: Elem): String = elem sxprints pretty
+
+  def parseString(s: String): Option[Elem] =
+    s.parseXml flatMap { _.elem } headOption
 
   private[xml] def toList(s: String) = s.toList
   private[xml] def fromList(cs: List[Char]) =  cs mkString ""
