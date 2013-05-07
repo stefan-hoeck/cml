@@ -7,7 +7,16 @@ object Xml
   extends ReadFunctions
   with ReadInstances 
   with XmlFunctions
-  with XmlInstances
+  with XmlInstances {
+
+  implicit class AnyOps[A](val a: A) extends AnyVal {
+    def xml(qn: QName)(implicit F: WriteXml[A]): Elem = elem(qn, F(a))
+  }
+
+  implicit class ElemOps(val v: Elem) extends AnyVal {
+    def read[A](implicit F: ReadXml[A]): ValRes[A] = F(v)
+  }
+}
 
 trait XmlInstances {
   implicit val ReadXmlApplicative: Applicative[ReadXml] =
@@ -73,6 +82,10 @@ trait XmlFunctions {
 
   def writeText[A](qn: QName): WriteXml[A] = 
     a ⇒ (DList(), DList(text(qn, a.toString)))
+
+  def writeXml[A](a: A, qn: QName)(implicit F: WriteXml[A]): Elem =
+    elem(qn, F(a))
+    
 
   private def byQn[A,B](qn: QName)(a: A)(f: (A, (QName ⇒ Boolean)) ⇒ Option[B])
     : Option[B] = {
