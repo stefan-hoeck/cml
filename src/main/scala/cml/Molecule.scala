@@ -10,6 +10,8 @@ case class Molecule(
     atoms: List[Atom])
 
 object Molecule {
+  implicit val MoleculeEqual = Equal.equalA[Molecule]
+
   implicit val ReadXmlImpl: ReadXml[Molecule] =
     ^^(rId, rCount, rAtoms)(Molecule.apply)
 
