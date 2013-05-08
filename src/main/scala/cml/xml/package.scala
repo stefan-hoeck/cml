@@ -23,7 +23,9 @@ package object xml {
 
   type Logs = DList[String]
 
-  type Reader[-A,+B] = A ⇒ (Logs,ValRes[B])
+  type ReaderPair[+A] = (Logs,ValRes[A])
+
+  type Reader[-A,+B] = A ⇒ ReaderPair[B]
 
   type XmlReader[+A] = Reader[Elem,A]
 

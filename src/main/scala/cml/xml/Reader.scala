@@ -12,9 +12,9 @@ trait ReaderFunctions {
     }
 
   def bulkReader[A,B,F[_]:Traverse](r: Reader[A,B]): Reader[F[A],F[B]] = {
-    import reader.{ReaderPair, PairApplicative}
+    import reader.PairApplicative
 
-    _ traverse { a ⇒ r(a): ReaderPair[B] }
+    _ traverse r
   }
 
   def contramap[A,B,C](r: Reader[A,B])(f: C ⇒ A): Reader[C,B] =
@@ -52,8 +52,6 @@ trait ReaderFunctions {
 }
 
 trait ReaderInstances {
-  type ReaderPair[+A] = (Logs,ValRes[A])
-
   implicit val PairApplicative: Applicative[ReaderPair] =
     new Applicative[ReaderPair] {
       def point[A](a: ⇒ A) = (reader.noLogs, a.success)
