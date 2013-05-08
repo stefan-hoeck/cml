@@ -6,8 +6,8 @@ import scalaz._, Scalaz._
 object Xml 
   extends ReadFunctions
   with ReadInstances 
-  with XmlFunctions
-  with XmlInstances {
+  with ReaderInstances
+  with XmlFunctions {
 
   implicit class AnyOps[A](val a: A) extends AnyVal {
     def xml(qn: QName)(implicit F: XmlWriter[A]): Elem = elem(qn, F(a))
@@ -16,54 +16,62 @@ object Xml
   implicit class ElemOps(val v: Elem) extends AnyVal {
     def read[A](implicit F: XmlReader[A]): ValRes[A] = F(v)._2
   }
-}
 
-trait XmlInstances {
-  implicit val XmlReaderApplicative: Applicative[XmlReader] = ???
-    //Applicative[({type λ[α] = Elem ⇒ α})#λ].compose[ValRes]
+  implicit class ReaderOps[A,B](val r: Reader[A,B]) extends AnyVal {
+    def bulkReader[F[_]:Traverse]: Reader[F[A],F[B]] =
+      reader.bulkReader(r)
+
+    def log(l: Log): Reader[A,B] = >=>(reader log l)
+
+    def logs(ls: Logs): Reader[A,B] = >=>(reader logs ls)
+
+    def validate[C](f: B ⇒ ValRes[C]): Reader[A,C] = >=>(reader liftV f)
+
+    def >=>[C](that: Reader[B,C]): Reader[A,C] = reader.compose(that)(r)
+  }
+
+  implicit class ReaderOOps[A,B](val r: Reader[A,Option[B]]) extends AnyVal {
+
+    def validateO[C](f: B ⇒ ValRes[C]): Reader[A,Option[C]] = 
+      >?>(reader liftV f)
+
+    def >?>[C](that: Reader[B,C]): Reader[A,Option[C]] =
+      reader.composeO(that)(r)
+
+    def >??>[C](that: Reader[B,Option[C]]): Reader[A,Option[C]] =
+      reader.composeOO(that)(r)
+  }
 }
 
 trait XmlFunctions {
-  def attrValueO(qn: QName): XmlReader[Option[String]] = ???
-    //byQn(qn)(_){ _ findAttrBy _ } map fromList success
+  import Xml.{ReaderOps, ReaderOOps, ReaderApplicative}
 
-  def attrValue(qn: QName): XmlReader[String] = ???
-    //reval(attrValueO(qn)){ _ toSuccess s"Attribute missing: $qn".wrapNel }
+  def findAttr(qn: QName): XmlReader[Option[String]] = e ⇒ 
+    (reader.noLogs, byQn(qn)(e){ _ findAttrBy _ } map fromList success)
 
-  def findElemO(qn: QName): XmlReader[Option[Elem]] = ???
-    //byQn(qn)(_){ _ filterElementQname _ } success
+  def readAttr[A:Read](qn: QName): XmlReader[Option[A]] =
+    findAttr(qn) validate Read[A].readO
 
-  def findElem(qn: QName): XmlReader[Elem] = ???
-    //reval(findElemO(qn)){  _ toSuccess s"Element missing: $qn".wrapNel }
+  def readMustHaveAttr[A:Read](qn: QName): XmlReader[A] =
+    readAttr[A](qn) >=> mustHaveAttr(qn)
 
-  def findElems(qn: QName): XmlReader[List[Elem]] = ???
-    //byQns(qn)(_){ _ filterChildrenQname _ } success
+  def readShouldHaveAttr[A:Read](qn: QName): XmlReader[Option[A]] =
+    readAttr[A](qn) >=> shouldHaveAttr(qn)
 
-  def elemTextO(qn: QName): XmlReader[Option[String]] = ???
-    //readMapO(findElemO(qn)){ e ⇒ fromList(e.strContent) }
+  def findElem(qn: QName): XmlReader[Option[Elem]] = e ⇒ 
+    (reader.noLogs, byQn(qn)(e){ _ filterElementQname _ } success)
 
-  def elemText(qn: QName): XmlReader[String] = ???
-    //readMap(findElem(qn)){ e ⇒ fromList(e.strContent) }
+  def findElems(qn: QName): XmlReader[List[Elem]] = e ⇒ 
+    (reader.noLogs, byQns(qn)(e){ _ filterChildrenQname _ } success)
 
-  def readElem[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[A] = ???
-    //reval(findElem(qn))(F)
+  def findText(qn: QName): XmlReader[Option[String]] =
+    findElem(qn) ∘ { _ map { e ⇒ fromList(e.strContent) } }
 
-  def readElemO[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[Option[A]] = ???
-    //revalO(findElemO(qn))(F)
+  def readElem[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[Option[A]] =
+    findElem(qn) >?> F
 
-  def readElems[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[List[A]] = ???
-    //reval(findElems(qn)){ _ traverse F }
-
-  def reval[A,B](ra: XmlReader[A])(v: A ⇒ ValRes[B]): XmlReader[B] = ???
-    //ra(_) flatMap v
-
-  def revalO[A,B](ra: XmlReader[Option[A]])(v: A ⇒ ValRes[B])
-    : XmlReader[Option[B]] = ??? //ra(_) flatMap { _ traverse v }
-
-  def readMap[A,B](ra: XmlReader[A])(f: A ⇒ B): XmlReader[B] = ??? //ra(_) map f
-
-  def readMapO[A,B](ra: XmlReader[Option[A]])(f: A ⇒ B): XmlReader[Option[B]] = ???
-    //ra(_) map { _ map f }
+  def readElems[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[List[A]] =
+    findElems(qn) >=> F.bulkReader
 
   def writeAttr[A](qn: QName): XmlWriter[A] =
     a ⇒ (DList(attr(qn, a.toString)), DList())
@@ -106,6 +114,27 @@ trait XmlFunctions {
 
       if (withPrefix.isEmpty) f(a, name) else withPrefix
     }
+
+  private def shouldHave[A](qn: QName, name: String)
+    : Reader[Option[A],Option[A]] = {
+      def msg = s"Warning: $name ${qn.sname} was not found."
+
+      _ match {
+        case x@Some(_) ⇒ (reader.noLogs, x.success)
+        case _         ⇒ (DList(msg), none.success)
+      }
+    }
+
+  private def mustHave[A](qn: QName, name: String): Reader[Option[A],A] = {
+    def msg = s"$name ${qn.sname} was not found."
+
+    oa ⇒ (reader.noLogs, oa toSuccess msg.wrapNel)
+  }
+
+  def mustHaveElem[A](qn: QName) = mustHave[A](qn, "Element")
+  def mustHaveAttr[A](qn: QName) = mustHave[A](qn, "Attribute")
+  def shouldHaveElem[A](qn: QName) = shouldHave[A](qn, "Element")
+  def shouldHaveAttr[A](qn: QName) = shouldHave[A](qn, "Attribute")
 }
 
 // vim: set ts=2 sw=2 et:

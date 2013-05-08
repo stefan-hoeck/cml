@@ -19,7 +19,11 @@ package object xml {
 
   type ElemData = (DList[Attr], DList[Elem])
 
-  type Reader[-A,+B] = A ⇒ (DList[String],ValRes[B])
+  type Log = String
+
+  type Logs = DList[String]
+
+  type Reader[-A,+B] = A ⇒ (Logs,ValRes[B])
 
   type XmlReader[+A] = Reader[Elem,A]
 
