@@ -12,6 +12,8 @@ final case class Atom(
 object Atom {
   implicit val AtomEqual = Equal.equalA[Atom]
 
+  implicit val AtomShow = Show shows { a: Atom ⇒ a.toString }
+
   implicit val XmlReaderImpl: XmlReader[Atom] = 
     ^^(rId, rElement, rFormalCharge)(Atom.apply)
 
