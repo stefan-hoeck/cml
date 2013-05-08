@@ -14,8 +14,6 @@ package object cml {
   final val ConventionURI = "http://www.xml-cml.org/convention/"
 
   def cmlQn(name: String) = qname(name, Some("cml"), Some(CmlURI))
-
-  final val AtomQn = cmlQn("atom")
 }
 
 // vim: set ts=2 sw=2 et:
