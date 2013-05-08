@@ -14,7 +14,9 @@ object Xml
   }
 
   implicit class ElemOps(val v: Elem) extends AnyVal {
-    def read[A](implicit F: XmlReader[A]): ValRes[A] = F(v)._2
+    def readV[A](implicit F: XmlReader[A]): ValRes[A] = F(v)._2
+
+    def read[A](implicit F: XmlReader[A]): ReaderPair[A] = F(v)
   }
 
   implicit class ReaderOps[A,B](val r: Reader[A,B]) extends AnyVal {

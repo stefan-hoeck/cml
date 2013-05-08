@@ -49,6 +49,27 @@ package object xml {
   def parseString(s: String): Option[Elem] =
     s.parseXml flatMap { _.elem } headOption
 
+  def parseAndShow[A:XmlReader:Show](s: String): String = {
+    import Xml.ElemOps
+
+    parseString(s) map { e ⇒ showPair(e.read[A]) } getOrElse ""
+  }
+
+  def showPair[A:Show](p: ReaderPair[A]): String = p match {
+    case (logs,va) ⇒ {
+      def logS = logs.toList mkString "  \n"
+      def errors(es: NonEmptyList[String]): String = {
+        val erS = es.list mkString "  \n"
+
+        s"The following errors occured during XML parsing:\n$erS"
+      }
+
+      def aString = va fold (errors, _.shows)
+
+      s"Logs:\n$logS\n\n$aString"
+    }
+  }
+
   private[xml] def toList(s: String) = s.toList
   private[xml] def fromList(cs: List[Char]) =  cs mkString ""
 }

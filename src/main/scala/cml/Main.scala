@@ -20,8 +20,7 @@ object Main extends SafeApp {
   lazy val xmlString =
     prettyPrint(ethanol xml Attributes.MoleculeQn)
 
-  lazy val readResult =
-    parseString(xmlString) traverse { _.read[Molecule] }
+  lazy val readResult = parseAndShow[Molecule](xmlString)
 }
 
 // vim: set ts=2 sw=2 et:
