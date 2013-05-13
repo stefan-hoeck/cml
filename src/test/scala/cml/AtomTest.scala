@@ -10,7 +10,7 @@ object AtomTest extends Properties("Atom") with Generators {
   property("equal laws") = ScalazProperties.equal.laws[Atom]
 
   property("write / read xml") = forAll { a: Atom ⇒ 
-    a.xml(AtomQn).read[Atom] ≟ a.success
+    a.xml(AtomQn).readV[Atom] ≟ a.success
   }
 }
 

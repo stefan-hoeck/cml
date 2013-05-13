@@ -10,7 +10,7 @@ object MoleculeTest extends Properties("Molecule") with Generators {
   property("equal laws") = ScalazProperties.equal.laws[Molecule]
 
   property("write / read xml") = forAll { m: Molecule ⇒ 
-    m.xml(MoleculeQn).read[Molecule] ≟ m.success
+    m.xml(MoleculeQn).readV[Molecule] ≟ m.success
   }
 }
 
