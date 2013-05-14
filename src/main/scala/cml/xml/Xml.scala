@@ -48,8 +48,8 @@ object Xml
 trait XmlFunctions {
   import Xml.{ReaderOps, ReaderOOps, ReaderApplicative}
 
-  def findAttr(qn: QName): XmlReader[Option[String]] = e ⇒ 
-    (reader.noLogs, byQn(qn)(e){ _ findAttrBy _ } map fromList success)
+  def findAttr(qn: QName): XmlReader[Option[String]] = ??? //e ⇒ 
+//    (reader.noLogs, byQn(qn)(e){ _ findAttrBy _ } map fromList success)
 
   def readAttr[A:Read](qn: QName): XmlReader[Option[A]] =
     findAttr(qn) validate Read[A].readO
@@ -60,14 +60,14 @@ trait XmlFunctions {
   def readShouldHaveAttr[A:Read](qn: QName): XmlReader[Option[A]] =
     readAttr[A](qn) >=> shouldHaveAttr(qn)
 
-  def findElem(qn: QName): XmlReader[Option[Elem]] = e ⇒ 
-    (reader.noLogs, byQn(qn)(e){ _ filterElementQname _ } success)
+  def findElem(qn: QName): XmlReader[Option[Elem]] = ??? //e ⇒ 
+//    (reader.noLogs, byQn(qn)(e){ _ filterElementQname _ } success)
 
-  def findElems(qn: QName): XmlReader[List[Elem]] = e ⇒ 
-    (reader.noLogs, byQns(qn)(e){ _ filterChildrenQname _ } success)
+  def findElems(qn: QName): XmlReader[List[Elem]] = ??? //e ⇒ 
+    //top(e) \* qn
 
-  def findText(qn: QName): XmlReader[Option[String]] =
-    findElem(qn) ∘ { _ map { e ⇒ fromList(e.strContent) } }
+  def findText(qn: QName): XmlReader[Option[String]] = ???
+//    findElem(qn) ∘ { _ map { e ⇒ fromList(e.strContent) } }
 
   def readElem[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[Option[A]] =
     findElem(qn) >?> F
@@ -90,7 +90,7 @@ trait XmlFunctions {
   def writeElems[A](qn: QName)(implicit F: XmlWriter[A]): XmlWriter[List[A]] =
     _ foldMap writeElem[A](qn)
 
-  def writeText[A](qn: QName): XmlWriter[A] = 
+  def writeText[A](qn: QName): XmlWriter[A] =
     a ⇒ (DList(), DList(text(qn, a.toString)))
 
   def writeXml[A](a: A, qn: QName)(implicit F: XmlWriter[A]): Elem =
@@ -98,28 +98,28 @@ trait XmlFunctions {
     
 
   private def byQn[A,B](qn: QName)(a: A)(f: (A, (QName ⇒ Boolean)) ⇒ Option[B])
-    : Option[B] = {
-      def name(qn1: QName) = qn.name == qn1.name
-      def prefName(qn1: QName) = (qn.name == qn1.name) &&
-                                 (qn.prefix == qn1.prefix)
-
-      f(a, prefName) orElse f(a, name)
-    }
+    : Option[B] = ??? //{
+//      def name(qn1: QName) = qn.name == qn1.name
+//      def prefName(qn1: QName) = (qn.name == qn1.name) &&
+//                                 (qn.prefix == qn1.prefix)
+//
+//      f(a, prefName) orElse f(a, name)
+//    }
 
   private def byQns[A,B](qn: QName)(a: A)(f: (A, (QName ⇒ Boolean)) ⇒ List[B])
-    : List[B] = {
-      def name(qn1: QName) = qn.name == qn1.name
-      def prefName(qn1: QName) = (qn.name == qn1.name) &&
-                                 (qn.prefix == qn1.prefix)
-
-      val withPrefix = f(a, prefName) 
-
-      if (withPrefix.isEmpty) f(a, name) else withPrefix
-    }
+    : List[B] = ??? // {
+//      def name(qn1: QName) = qn.name == qn1.name
+//      def prefName(qn1: QName) = (qn.name == qn1.name) &&
+//                                 (qn.prefix == qn1.prefix)
+//
+//      val withPrefix = f(a, prefName) 
+//
+//      if (withPrefix.isEmpty) f(a, name) else withPrefix
+//    }
 
   private def shouldHave[A](qn: QName, name: String)
     : Reader[Option[A],Option[A]] = {
-      def msg = s"Warning: $name ${qn.sname} was not found."
+      def msg = s"Warning: $name $qn was not found."
 
       _ match {
         case x@Some(_) ⇒ (reader.noLogs, x.success)
@@ -128,7 +128,7 @@ trait XmlFunctions {
     }
 
   private def mustHave[A](qn: QName, name: String): Reader[Option[A],A] = {
-    def msg = s"$name ${qn.sname} was not found."
+    def msg = s"$name $qn was not found."
 
     oa ⇒ (reader.noLogs, oa toSuccess msg.wrapNel)
   }

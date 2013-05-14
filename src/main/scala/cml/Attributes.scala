@@ -54,7 +54,7 @@ object Attributes extends Attributes {
 
   final val AtomQn = cmlQn("atom")
   final val AtomArrayQn = cmlQn("atomArray")
-  final val CmlQn = qname("cml", None, None)
+  final val CmlQn = cmlQn("cml")
   final val CountQn = cmlQn("count")
   final val ElementTypeQn = cmlQn("elementType")
   final val FormalChargeQn = cmlQn("formalCharge")

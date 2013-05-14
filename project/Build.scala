@@ -14,13 +14,11 @@ object BuildSettings {
     scalacOptions ++= Seq ("-deprecation", "-feature", "-language:postfixOps",
       "-language:higherKinds"),
     initialCommands in console := """
-      import scalaz._, Scalaz._
+      import scales.utils._, ScalesUtils._, scales.xml._, ScalesXml._
       import cml._, cml.xml._, cml.xml.Xml._
-      import scalaz.xml.Xml._
       val atom = Atom("a1", Element.Br, Some(-1))
     """
   )
-
 } 
 
 object Dependencies {
@@ -28,12 +26,12 @@ object Dependencies {
   val scalazV = "7.0.0"
 
   val scalaz_core = scalaz %% "scalaz-core" % scalazV
-  val scalaz_xml = scalaz %% "scalaz-xml" % scalazV
   val scalaz_effect = scalaz %% "scalaz-effect" % scalazV
   val scalaz_iteratee = scalaz %% "scalaz-iteratee" % scalazV
   val scalaz_scalacheck = scalaz %% "scalaz-scalacheck-binding" % scalazV % "test"
 
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
+  val scalesxml = "org.scalesxml" %% "scales-xml" % "0.6.0-M1"
 }
 
 object UtilBuild extends Build {
@@ -49,8 +47,8 @@ object UtilBuild extends Build {
     "cml",
     file("."),
     settings = addDeps (scalaz_core, scalaz_effect, scalaz_iteratee,
-                        scalaz_scalacheck, scalacheck, scalaz_xml)
+                        scalaz_scalacheck, scalacheck, scalesxml)
   )
 }
 
-// vim: set ts=2 sw=2 et:
+// vim: set ts=2 sw=2 et nowrap:

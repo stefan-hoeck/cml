@@ -1,9 +1,7 @@
 package cml
 
 import scalaz._, Scalaz._
-import scalaz.xml.{CData, CDataKind, Element ⇒ ElemZ,
-                   Attr ⇒ AttrZ, QName ⇒ QNameZ, Content}
-import scalaz.xml.Xml._
+import scales.utils._, ScalesUtils._, scales.xml._, ScalesXml._
 
 /** Defines type aliases and basic functions for interacting with an
   * XML backend.
@@ -13,9 +11,13 @@ import scalaz.xml.Xml._
   * to be rewritten when changing the XML-backend.
   */
 package object xml {
-  type QName = QNameZ
-  type Attr = AttrZ
-  type Elem = ElemZ
+  type Namespace = scales.xml.PrefixedNamespace
+
+  type QName = scales.xml.PrefixedQName
+
+  type Attr = Attribute
+
+  type Elem = scales.xml.XmlTree
 
   type ElemData = (DList[Attr], DList[Elem])
 
@@ -31,23 +33,22 @@ package object xml {
 
   type XmlWriter[-A] = A ⇒ ElemData
 
-  def qname(name: String, pre: Option[String], uri: Option[String]): QName =
-    QNameZ qname (name.toList, uri map toList, pre map toList)
+  def ns(pre: String, uri: String): Namespace = 
+    scales.xml.Namespace(uri) prefixed pre
 
-  def attr(qname: QName, value: String): Attr =
-    AttrZ attr (qname, value.toList)
+  def qname(name: String, ns: Namespace): QName = ns(name)
 
-  def text(qname: QName, txt: String): Elem =
-    ElemZ element (qname, Nil, List(
-      Content text CData.cdata(CDataKind.cdataText, txt.toList)))
+  def attr(qname: QName, value: String): Attr = qname → value
+
+  def text(qname: QName, txt: String): Elem = qname / txt toTree
 
   def elem(qname: QName, data: ElemData): Elem =
-    ElemZ element (qname, data._1.toList, data._2 map Content.elem toList)
+    qname /@ (data._1.toList: _*) / (data._2.toList: _*) toTree
 
-  def prettyPrint(elem: Elem): String = elem sxprints pretty
+  def prettyPrint(elem: Elem): String = asString(elem)
 
-  def parseString(s: String): Option[Elem] =
-    s.parseXml flatMap { _.elem } headOption
+  def parseString(s: String): Option[Elem] = ???
+//    s.parseXml flatMap { _.elem } headOption
 
   def parseAndShow[A:XmlReader:Show](s: String): String = {
     import Xml.ElemOps
@@ -69,9 +70,6 @@ package object xml {
       s"Logs:\n$logS\n\n$aString"
     }
   }
-
-  private[xml] def toList(s: String) = s.toList
-  private[xml] def fromList(cs: List[Char]) =  cs mkString ""
 }
 
 // vim: set ts=2 sw=2 et:
