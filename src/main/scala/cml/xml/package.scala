@@ -47,13 +47,13 @@ package object xml {
 
   def prettyPrint(elem: Elem): String = asString(elem)
 
-  def parseString(s: String): Option[Elem] = ???
-//    s.parseXml flatMap { _.elem } headOption
+  def parseString(s: String): Elem =
+    top(loadXml(new java.io.StringReader(s))).tree
 
   def parseAndShow[A:XmlReader:Show](s: String): String = {
     import Xml.ElemOps
 
-    parseString(s) map { e ⇒ showPair(e.read[A]) } getOrElse ""
+    showPair(parseString(s).read[A])
   }
 
   def showPair[A:Show](p: ReaderPair[A]): String = p match {

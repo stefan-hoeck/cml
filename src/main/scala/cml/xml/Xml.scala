@@ -1,6 +1,7 @@
 package cml.xml
 
 import cml.ValRes
+import scales.utils._, ScalesUtils._, scales.xml._, ScalesXml._
 import scalaz._, Scalaz._
 
 object Xml 
@@ -48,8 +49,8 @@ object Xml
 trait XmlFunctions {
   import Xml.{ReaderOps, ReaderOOps, ReaderApplicative}
 
-  def findAttr(qn: QName): XmlReader[Option[String]] = ??? //e ⇒ 
-//    (reader.noLogs, byQn(qn)(e){ _ findAttrBy _ } map fromList success)
+  def findAttr(qn: QName): XmlReader[Option[String]] = e ⇒ 
+    (reader.noLogs, (top(e) *@ qn).headOption map { string(_) } success)
 
   def readAttr[A:Read](qn: QName): XmlReader[Option[A]] =
     findAttr(qn) validate Read[A].readO
@@ -60,14 +61,14 @@ trait XmlFunctions {
   def readShouldHaveAttr[A:Read](qn: QName): XmlReader[Option[A]] =
     readAttr[A](qn) >=> shouldHaveAttr(qn)
 
-  def findElem(qn: QName): XmlReader[Option[Elem]] = ??? //e ⇒ 
-//    (reader.noLogs, byQn(qn)(e){ _ filterElementQname _ } success)
+  def findElem(qn: QName): XmlReader[Option[Elem]] = e ⇒ 
+    (reader.noLogs, (top(e) \* qn).headOption.map(_.tree).success)
 
-  def findElems(qn: QName): XmlReader[List[Elem]] = ??? //e ⇒ 
-    //top(e) \* qn
+  def findElems(qn: QName): XmlReader[List[Elem]] = e ⇒ 
+    (reader.noLogs, (top(e) \* qn).map( _.tree).toList.success)
 
-  def findText(qn: QName): XmlReader[Option[String]] = ???
-//    findElem(qn) ∘ { _ map { e ⇒ fromList(e.strContent) } }
+  def findText(qn: QName): XmlReader[Option[String]] =
+    findElem(qn) ∘ { _ map { string(_) } }
 
   def readElem[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[Option[A]] =
     findElem(qn) >?> F
@@ -95,27 +96,6 @@ trait XmlFunctions {
 
   def writeXml[A](a: A, qn: QName)(implicit F: XmlWriter[A]): Elem =
     elem(qn, F(a))
-    
-
-  private def byQn[A,B](qn: QName)(a: A)(f: (A, (QName ⇒ Boolean)) ⇒ Option[B])
-    : Option[B] = ??? //{
-//      def name(qn1: QName) = qn.name == qn1.name
-//      def prefName(qn1: QName) = (qn.name == qn1.name) &&
-//                                 (qn.prefix == qn1.prefix)
-//
-//      f(a, prefName) orElse f(a, name)
-//    }
-
-  private def byQns[A,B](qn: QName)(a: A)(f: (A, (QName ⇒ Boolean)) ⇒ List[B])
-    : List[B] = ??? // {
-//      def name(qn1: QName) = qn.name == qn1.name
-//      def prefName(qn1: QName) = (qn.name == qn1.name) &&
-//                                 (qn.prefix == qn1.prefix)
-//
-//      val withPrefix = f(a, prefName) 
-//
-//      if (withPrefix.isEmpty) f(a, name) else withPrefix
-//    }
 
   private def shouldHave[A](qn: QName, name: String)
     : Reader[Option[A],Option[A]] = {
