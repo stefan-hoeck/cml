@@ -33,6 +33,10 @@ package object xml {
 
   type XmlWriter[-A] = A ⇒ ElemData
 
+  def XmlReader[A:XmlReader]: XmlReader[A] = implicitly
+
+  def XmlWriter[A:XmlWriter]: XmlWriter[A] = implicitly
+
   def ns(pre: String, uri: String): Namespace = 
     scales.xml.Namespace(uri) prefixed pre
 

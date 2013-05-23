@@ -49,8 +49,13 @@ object Xml
 trait XmlFunctions {
   import Xml.{ReaderOps, ReaderOOps, ReaderApplicative}
 
-  def findAttr(qn: QName): XmlReader[Option[String]] = e ⇒ 
-    (reader.noLogs, (top(e) *@ qn).headOption map { string(_) } success)
+  def findAttr(qn: QName): XmlReader[Option[String]] = e ⇒ {
+    def prefixed = (top(e) *@ qn).headOption
+    def unprefixed = (top(e) *:@ qn.local).headOption
+    def value = prefixed orElse unprefixed map { string(_) }
+
+    (reader.noLogs, value.success)
+  }
 
   def readAttr[A:Read](qn: QName): XmlReader[Option[A]] =
     findAttr(qn) validate Read[A].readO
@@ -69,6 +74,9 @@ trait XmlFunctions {
 
   def findText(qn: QName): XmlReader[Option[String]] =
     findElem(qn) ∘ { _ map { string(_) } }
+
+  def getElem(qn: QName): XmlReader[Elem] =
+    findElem(qn) >=> mustHaveElem(qn)
 
   def readElem[A](qn: QName)(implicit F: XmlReader[A]): XmlReader[Option[A]] =
     findElem(qn) >?> F
