@@ -9,6 +9,8 @@ package object cml {
 
   type DisRes[+A] = Errors \/ A
 
+  type AtomRefs2 = (String, String)
+
   final val CmlURI = "http://www.xml-cml.org/schema"
 
   final val ConventionURI = "http://www.xml-cml.org/convention/"
