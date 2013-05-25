@@ -3,6 +3,7 @@ package cml
 import cml.Attributes._
 import cml.xml._, Xml._
 import scales.utils._, ScalesUtils._, scales.xml._, ScalesXml._
+import scales.xml.jaxen._
 import scalaz._, Scalaz._
 
 package object example {
@@ -41,7 +42,10 @@ package object example {
   //Pretty prints the molecule including all logging messages
   val molPretty: String = showPair(mol)
 
+
+
   /** Parsing using Scales XML's DSL **/
+
   //The code below operates directly on the XML tree. This is unmodified
   //Scales XML syntax, so no input validation, no error handling, and no
   //logging.
@@ -67,6 +71,16 @@ package object example {
   //unprefixed version of the syntax
   val elementTypes: List[String] =
     (atoms *:@ ElementTypeQn.local).toList map { string(_) }
+
+
+  /** Queriyng using XPaths directly **/
+  
+  //We can use XPath Strings directly at the cost of type safety
+  val xpath = ScalesXPath("/cml/molecule/atomArray/atom/@elementType")
+                .withNameConversion(ScalesXPath.localOnly)
+
+  val elementTypes2: List[String] =
+    xpath attributePaths top(root) map { string(_) } toList
 }
 
 // vim: set ts=2 sw=2 et:
