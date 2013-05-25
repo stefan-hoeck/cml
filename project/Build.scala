@@ -32,6 +32,9 @@ object Dependencies {
 
   val scalacheck = "org.scalacheck" %% "scalacheck" % "1.10.0" % "test"
   val scalesxml = "org.scalesxml" %% "scales-xml" % "0.6.0-M1"
+  val scalesjaxen = "org.scalesxml" %% "scales-jaxen" % "0.6.0-M1" intransitive()
+
+  val jaxen = "jaxen" % "jaxen" % "1.1.3" intransitive()
 }
 
 object UtilBuild extends Build {
@@ -47,7 +50,8 @@ object UtilBuild extends Build {
     "cml",
     file("."),
     settings = addDeps (scalaz_core, scalaz_effect, scalaz_iteratee,
-                        scalaz_scalacheck, scalacheck, scalesxml)
+                        scalaz_scalacheck, scalacheck, scalesxml,
+                        scalesjaxen, jaxen)
   )
 }
 
